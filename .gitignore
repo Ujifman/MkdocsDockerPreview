@@ -1,0 +1,10 @@
+node_modules/
+out/
+out-test/
+*.vsix
+.vscode-test/
+*.log
+.claude/settings.local.json
+.cursor/settings.local.json
+.env
+.env.*

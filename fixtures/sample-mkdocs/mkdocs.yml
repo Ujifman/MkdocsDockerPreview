@@ -1,0 +1,87 @@
+site_name: MkdocsDockerPreviewExample
+site_url: 'http://some.host.example/someexample/mkdocs/'
+repo_url: ''
+repo_name: MkdocsDockerPreviewExample
+edit_uri: edit/master/docs/
+site_dir: mkdocs
+use_directory_urls: false
+theme:
+  name: material
+  language: ru
+  custom_dir: docs/assets/theme
+  palette:
+  - scheme: default
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to dark mode
+  - scheme: slate
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to light mode
+  icon:
+    edit: material/pencil
+  features:
+  - search.suggest
+  - search.highlight
+  - content.code.copy
+  - content.action.edit
+validation:
+  links:
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+plugins:
+- search:
+    lang:
+    - en
+    - ru
+- offline
+- include-markdown
+- drawio
+- unused_files:
+    excluded_dirs:
+    - assets
+    strict: true
+- plantuml:
+    puml_url: https://www.plantuml.com/plantuml/
+    puml_keyword: plantuml
+markdown_extensions:
+- meta
+- admonition
+- toc:
+    slugify: !!python/object/apply:functools.partial
+      args:
+      - !!python/name:pymdownx.slugs._uslugify
+      state: !!python/tuple
+      - !!python/name:pymdownx.slugs._uslugify
+      - !!python/tuple []
+      - case: lower
+        percent_encode: false
+        normalize: NFC
+      - null
+    permalink: ''
+- pymdownx.details
+- pymdownx.tasklist:
+    custom_checkbox: true
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format
+- pymdownx.inlinehilite
+- pymdownx.keys
+- pymdownx.caret
+- pymdownx.mark
+- pymdownx.tilde
+- pymdownx.arithmatex:
+    generic: true
+extra_javascript:
+- assets/javascripts/shortcuts.js
+- assets/javascripts/mathjax.js
+- https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+extra_css:
+- assets/stylesheets/wide.css
+- assets/stylesheets/permalink.css
+- assets/stylesheets/tables.css

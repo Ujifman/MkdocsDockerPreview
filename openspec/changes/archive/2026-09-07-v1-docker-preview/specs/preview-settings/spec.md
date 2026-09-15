@@ -1,0 +1,68 @@
+## ADDED Requirements
+
+### Requirement: Docker image setting
+
+The extension MUST contribute a workspace/user setting for the Docker image used to run the preview. The default MUST be `docker-public.example.com/docs/properdocs:latest`.
+
+#### Scenario: Default image is properdocs
+
+- **WHEN** the user has not overridden the Docker image setting
+- **THEN** the extension MUST use `docker-public.example.com/docs/properdocs:latest` when starting preview
+
+#### Scenario: Blank image is rejected
+
+- **WHEN** the user starts preview and the Docker image setting is empty or whitespace-only
+- **THEN** the extension MUST NOT start a container
+- **AND** the extension MUST show a clear error that the Docker image is required
+
+### Requirement: Entrypoint setting
+
+The extension MUST contribute a setting for the container entrypoint. The default MUST be `/bin/bash`.
+
+#### Scenario: Default entrypoint
+
+- **WHEN** the user has not overridden the entrypoint setting
+- **THEN** the extension MUST pass `/bin/bash` as the Docker `--entrypoint` when starting preview
+
+### Requirement: Serve command setting with config placeholder
+
+The extension MUST contribute a setting for the serve command arguments passed after the image. The default MUST be `-c "properdocs serve -f {configFile} -a 0.0.0.0:8000"`. Before starting the container, the extension MUST replace every `{configFile}` token with the configured MkDocs config file name.
+
+#### Scenario: Placeholder substitution
+
+- **WHEN** the config file name setting is `mkdocs.yml` and the serve command contains `{configFile}`
+- **THEN** the command passed to Docker MUST contain `mkdocs.yml` and MUST NOT contain the literal `{configFile}` token
+
+#### Scenario: Custom serve command
+
+- **WHEN** the user sets a custom serve command string
+- **THEN** the extension MUST use that string (after `{configFile}` substitution) when starting preview
+
+### Requirement: Workdir setting
+
+The extension MUST contribute a setting for the container directory where the workspace is mounted and used as the working directory. The default MUST be `/build`.
+
+#### Scenario: Default workdir
+
+- **WHEN** the user has not overridden the workdir setting
+- **THEN** the extension MUST mount the workspace at `/build` and MUST set the container working directory to `/build`
+
+### Requirement: Config file name setting
+
+The extension MUST contribute a setting for the MkDocs config file name. The default MUST be `mkdocs.yml`. The extension MUST resolve the config file only as `<workspaceRoot>/<configFileName>` (no subdirectory search).
+
+#### Scenario: Default config at workspace root
+
+- **WHEN** the workspace root contains `mkdocs.yml` and the user has not overridden the config file name
+- **THEN** start preview MUST treat the config file as present at the workspace root
+
+#### Scenario: Custom config file name
+
+- **WHEN** the config file name setting is `mkdocs.custom.yml` and that file exists at the workspace root
+- **THEN** start preview MUST use `mkdocs.custom.yml` as the resolved config file name for `{configFile}`
+
+#### Scenario: Missing config file
+
+- **WHEN** the user starts preview and `<workspaceRoot>/<configFileName>` does not exist
+- **THEN** the extension MUST NOT start a container
+- **AND** the extension MUST show a clear error naming the expected path

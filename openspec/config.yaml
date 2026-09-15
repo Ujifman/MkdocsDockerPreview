@@ -1,0 +1,102 @@
+schema: spec-driven
+
+context: |
+  Product: MkdocsDockerPreview — a VSCode extension that previews an MkDocs
+  repository inside the editor by running serve in Docker (e.g. properdocs).
+
+  Why Docker: users can swap images to customize MkDocs plugins or use MkDocs
+  forks without installing Python/MkDocs on the host.
+
+  Preview runtime (host → container):
+  - dockerImage default: ujifman/properdocs-material:latest (blank image is an error).
+  - entrypoint default: /bin/bash
+  - serveCommand default uses {configFile} placeholder and properdocs serve on 0.0.0.0:8000
+  - workdir default: /build (entire workspace mounted there)
+  - configFileName default: mkdocs.yml at workspace root only
+  - Container listens on 8000; host gets an ephemeral port on 127.0.0.1
+  - Always docker run --rm; stop on Stop command, workspace close, and deactivate
+
+  Local try-out:
+  - Extension Development Host should open fixtures/sample-mkdocs (not the extension
+    root) so VS Code/Cursor do not reuse the already-open source window.
+  - Document F5 / Run Extension steps in README for VS Code and Cursor.
+
+  Layout:
+  - `src/` holds production TypeScript only. Do not put unit tests under `src/`.
+  - `tests/` holds all unit-test source (`*.test.ts`). Do not put production code there.
+  - Do not put production or test source at the repo root or in other top-level folders.
+  - fixtures/ holds sample MkDocs workspaces for Extension Host debugging only.
+
+  Domain constraints:
+  - This is a VSCode extension. Follow VSCode extension guidelines (activation,
+    settings, commands, webview/preview UX, disposal of processes and containers).
+  - Do not assume a host MkDocs install; Docker is the preview engine.
+  - Keep host/container concerns separate: settings and UI on the host, MkDocs
+    serve inside the container.
+
+  Discipline: Extreme Programming (XP). Values are non-negotiable:
+  Communication, Simplicity, Feedback, Courage, Respect.
+
+  Practices:
+  - Test-first (TDD): always write a failing test before production code.
+    Cycle: failing test → confirm red → minimal code to pass → refactor.
+  - Tests must be fast, independent, and deterministic. Mock Docker, the
+    network, and other I/O. Never hit a real Docker daemon or network in
+    unit tests.
+  - Run the full suite before every commit; no commit leaves tests red.
+  - Continuous integration: integrate often; fix a red build before new work.
+  - Simple Design (priority order): (1) passes tests, (2) reveals intention,
+    (3) no duplication, (4) fewest elements. Solve today's requirements only.
+  - Refactor continuously in small steps, only with a green suite.
+  - Collective ownership: any agent may improve any code; leave it cleaner.
+
+  SOLID is a design check, not a reason to add layers. Prefer the smallest
+  change that keeps boundaries clear:
+  - SRP: split UI, state, and I/O; keep types small.
+  - OCP: extend by adding types/composition, not growing if/switch trees.
+  - LSP: subtypes honor the base contract (no surprise throws or extra effects).
+  - ISP: depend only on methods you use; small interfaces over fat ones.
+  - DIP: high-level code depends on abstractions. Inject Docker clients,
+    filesystem, and clocks; mock those boundaries in tests.
+
+rules:
+  proposal:
+  - State the user-visible problem and why it matters now; do not jump to implementation.
+  - Always include a Non-goals section. Prefer today's requirement over speculative future work.
+  - Call out impact on Docker image, serve command, workdir, port 8000, or VSCode settings when relevant.
+  - Keep proposals short and concrete. Face uncertainty with questions, not assumptions.
+  specs:
+  - Specify observable behavior (commands, settings, preview, container lifecycle), not internal class names.
+  - Use SHALL/MUST for normative requirements; avoid should/may.
+  - Every requirement needs at least one scenario in WHEN/THEN (or Given/When/Then) form.
+  - Cover failure paths: missing Docker image, Docker unavailable, serve failure, container cleanup.
+  - Reference existing capabilities before inventing new ones.
+  design:
+  - Choose the simplest design that could possibly work. Reject speculative abstraction.
+  - Separate VSCode UI/state from Docker I/O; inject Docker and process boundaries.
+  - Explain why this option over alternatives. Do not add layers "for SOLID".
+  - Describe container lifecycle: create, mount repo at workdir, publish 8000, stop/remove on dispose.
+  - Call out test seams so Docker and the network can be mocked.
+  - Place production source under `src/`; place unit tests under `tests/`.
+  tasks:
+  - Put production files under `src/` and unit tests under `tests/`; do not colocate tests in `src/`.
+  - Order work as TDD slices: failing test first, then minimal production code, then refactor.
+  - Each task must be independently completable and small (about 2 hours or less).
+  - Name the tests to add before the production change they drive.
+  - Mock Docker, processes, and network; never require a real daemon in unit-test tasks.
+  - Include a full-suite run before considering the change done.
+
+operations:
+  apply:
+    guidance:
+    - Follow TDD on every task: write a failing test, confirm it fails, write the minimum code to pass, then refactor.
+    - Mock Docker, network, and other I/O in unit tests; do not start real containers to prove a unit.
+    - Run focused tests after each slice and the full suite before marking apply complete.
+    - Prefer the smallest change; delete dead code; do not add abstractions until duplication or pain demands it.
+    - Explain non-obvious "why" as if pairing; keep VSCode UI, state, and Docker I/O separated.
+    - Write production source under `src/` and unit tests under `tests/`.
+  archive:
+    guidance:
+    - Keep the completion summary concise and user-facing.
+    - Sync only behavior that shipped; do not promote speculative or unimplemented design.
+    - Confirm the suite is green before archive; a red suite is not done.

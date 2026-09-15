@@ -1,0 +1,108 @@
+{
+  "name": "mkdocs-docker-preview",
+  "displayName": "MkDocs Docker Preview",
+  "description": "Preview an MkDocs repository inside VS Code by running serve in Docker.",
+  "version": "0.2.1",
+  "publisher": "ujifman",
+  "icon": "media/icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ujifman/MkdocsDockerPreview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ujifman/MkdocsDockerPreview/issues"
+  },
+  "homepage": "https://github.com/Ujifman/MkdocsDockerPreview#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mkdocsDockerPreview.start",
+        "title": "MkDocs Docker Preview: Start Preview",
+        "category": "MkDocs Docker Preview"
+      },
+      {
+        "command": "mkdocsDockerPreview.stop",
+        "title": "MkDocs Docker Preview: Stop Preview"
+      },
+      {
+        "command": "mkdocsDockerPreview.openFromExplorer",
+        "title": "MkDocs Docker Preview: Start Preview"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "mkdocsDockerPreview.openFromExplorer",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mkdocsDockerPreview.openFromExplorer",
+          "when": "resourceFilename == 'mkdocs.yml' || resourceFilename == 'properdoc.yml'",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MkDocs Docker Preview",
+      "properties": {
+        "mkdocsDockerPreview.dockerImage": {
+          "type": "string",
+          "default": "ujifman/properdocs-material:latest",
+          "description": "Docker image used to run MkDocs/properdocs serve."
+        },
+        "mkdocsDockerPreview.entrypoint": {
+          "type": "string",
+          "default": "/bin/bash",
+          "description": "Container entrypoint passed to docker run --entrypoint."
+        },
+        "mkdocsDockerPreview.serveCommand": {
+          "type": "string",
+          "default": "-c \"properdocs serve -f {configFile} -a 0.0.0.0:8000\"",
+          "description": "Arguments after the image. Use {configFile} for the MkDocs config file name."
+        },
+        "mkdocsDockerPreview.workdir": {
+          "type": "string",
+          "default": "/build",
+          "description": "Container path where the workspace is mounted and used as the working directory."
+        },
+        "mkdocsDockerPreview.configFileName": {
+          "type": "string",
+          "default": "mkdocs.yml",
+          "description": "MkDocs config file name expected at the workspace root."
+        },
+        "mkdocsDockerPreview.docsDir": {
+          "type": "string",
+          "default": "docs",
+          "description": "Docs directory relative to the workspace root. Active markdown files under this path map to preview pages."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "tsc -p tsconfig.test.json",
+    "test": "tsc -p tsconfig.test.json && mocha \"out-test/tests/**/*.test.js\" --timeout 10000",
+    "package": "vsce package --no-dependencies --no-rewrite-relative-links --readme-path MARKETPLACE.md"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.10",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.6.0",
+    "mocha": "^11.0.1",
+    "typescript": "^5.7.2"
+  }
+}
