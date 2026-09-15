@@ -2,7 +2,7 @@
   "name": "mkdocs-docker-preview",
   "displayName": "MkDocs Docker Preview",
   "description": "Preview an MkDocs repository inside VS Code by running serve in Docker.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "ujifman",
   "icon": "media/icon.png",
   "license": "MIT",
