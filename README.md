@@ -26,11 +26,13 @@ Extension events, Docker CLI output, and live MkDocs/properdocs serve logs appea
 | `mkdocsDockerPreview.workdir`        | `/build`                                                |
 | `mkdocsDockerPreview.configFileName` | `mkdocs.yml`                                            |
 | `mkdocsDockerPreview.docsDir`        | `docs`                                                  |
+| `mkdocsDockerPreview.dockerPullParams` | `--platform=linux/amd64`                              |
 
 - `{configFile}` in `serveCommand` is replaced with `configFileName` for Command Palette Start Preview.
 - Explorer **Start Preview** uses the clicked file (path relative to the workspace) as `{configFile}` for that start when no preview is already running.
 - The config file must exist under the workspace folder.
 - A blank `dockerImage` is rejected at Start. Each new start pulls this image first; a failed pull is logged and does not by itself abort start.
+- `dockerPullParams` are extra arguments inserted before the image name on that pull (default `--platform=linux/amd64` so the Chrome-based image works on Apple Silicon). Empty or whitespace values mean no extra pull flags.
 - `docsDir` is the folder (relative to the workspace root) whose markdown files map to preview pages. Empty values fall back to `docs`.
 
 ## Structure
@@ -113,7 +115,7 @@ npm run compile
 What the extension approximates (host port is chosen by Docker):
 
 ```powershell
-docker pull ujifman/properdocs-material:latest
+docker pull --platform=linux/amd64 ujifman/properdocs-material:latest
 docker run -d --rm -p 127.0.0.1::8000 -v ${pwd}:/build -w /build --entrypoint /bin/bash ujifman/properdocs-material:latest -c "properdocs serve -f mkdocs.yml -a 0.0.0.0:8000"
 ```
 

@@ -5,6 +5,7 @@ import { PreviewSession } from '../src/previewSession';
 class MockRunner implements DockerRunner {
   public starts: string[][] = [];
   public images: string[] = [];
+  public pullArgs: string[][] = [];
   public stopped: string[] = [];
   public backgroundStopped: string[] = [];
   public nextHandle: ContainerHandle = {
@@ -15,9 +16,14 @@ class MockRunner implements DockerRunner {
   public waitForServeReadyCount = 0;
   public resolveServeReady: (() => void) | undefined;
 
-  async start(dockerArgs: string[], image: string): Promise<ContainerHandle> {
+  async start(
+    dockerArgs: string[],
+    image: string,
+    pullArgs: string[] = [],
+  ): Promise<ContainerHandle> {
     this.starts.push(dockerArgs);
     this.images.push(image);
+    this.pullArgs.push(pullArgs);
     if (this.failStartWith) {
       throw this.failStartWith;
     }
@@ -51,6 +57,13 @@ describe('PreviewSession', () => {
     assert.strictEqual(session.previewUrl, url);
   });
 
+  it('forwards pull args to the runner', async () => {
+    const runner = new MockRunner();
+    const session = new PreviewSession(runner);
+    await session.start(['run', '-d'], 'img', ['--platform=linux/amd64']);
+    assert.deepStrictEqual(runner.pullArgs, [['--platform=linux/amd64']]);
+  });
+
   it('stops a running container', async () => {
     const runner = new MockRunner();
     const session = new PreviewSession(runner);
@@ -77,10 +90,11 @@ describe('PreviewSession', () => {
       containerId: 'def',
       previewUrl: 'http://127.0.0.1:23456',
     };
-    const url = await session.start(['run', 'second'], 'other-image');
+    const url = await session.start(['run', 'second'], 'other-image', ['--quiet']);
     assert.deepStrictEqual(runner.stopped, []);
     assert.strictEqual(runner.starts.length, 1);
     assert.deepStrictEqual(runner.images, ['img']);
+    assert.deepStrictEqual(runner.pullArgs, [[]]);
     assert.strictEqual(url, 'http://127.0.0.1:12345');
     assert.strictEqual(session.state, 'running');
     assert.strictEqual(session.previewUrl, 'http://127.0.0.1:12345');

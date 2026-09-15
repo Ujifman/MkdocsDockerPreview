@@ -2,7 +2,7 @@
   "name": "mkdocs-docker-preview",
   "displayName": "MkDocs Docker Preview",
   "description": "Preview an MkDocs repository inside VS Code by running serve in Docker.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "ujifman",
   "icon": "media/icon.png",
   "license": "MIT",
@@ -19,6 +19,13 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "mkdocs",
+    "properdocs",
+    "preview",
+    "docker"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
@@ -85,6 +92,11 @@
           "type": "string",
           "default": "docs",
           "description": "Docs directory relative to the workspace root. Active markdown files under this path map to preview pages."
+        },
+        "mkdocsDockerPreview.dockerPullParams": {
+          "type": "string",
+          "default": "--platform=linux/amd64",
+          "description": "Extra arguments passed to docker pull before the image name. Empty to pull with no extra flags."
         }
       }
     }

@@ -132,6 +132,49 @@ describe('DockerCliRunner', () => {
     assert.strictEqual(calls[1][0], 'run');
   });
 
+  it('inserts extra pull args before the image', async () => {
+    const calls: string[][] = [];
+    const exec: ExecFn = async (_command, args) => {
+      calls.push(args);
+      if (args[0] === 'run') {
+        return { stdout: 'cid123\n', stderr: '', code: 0 };
+      }
+      if (args[0] === 'port') {
+        return { stdout: '127.0.0.1:49152\n', stderr: '', code: 0 };
+      }
+      return { stdout: '', stderr: '', code: 0 };
+    };
+    const runner = new DockerCliRunner(exec);
+    await runner.start(
+      ['run', '-d', '--rm', 'img'],
+      'example/preview:latest',
+      ['--platform=linux/amd64'],
+    );
+    assert.deepStrictEqual(calls[0], [
+      'pull',
+      '--platform=linux/amd64',
+      'example/preview:latest',
+    ]);
+    assert.strictEqual(calls[1][0], 'run');
+  });
+
+  it('omits extra pull args when they are empty', async () => {
+    const calls: string[][] = [];
+    const exec: ExecFn = async (_command, args) => {
+      calls.push(args);
+      if (args[0] === 'run') {
+        return { stdout: 'cid123\n', stderr: '', code: 0 };
+      }
+      if (args[0] === 'port') {
+        return { stdout: '127.0.0.1:49152\n', stderr: '', code: 0 };
+      }
+      return { stdout: '', stderr: '', code: 0 };
+    };
+    const runner = new DockerCliRunner(exec);
+    await runner.start(['run', '-d', '--rm', 'img'], 'img', []);
+    assert.deepStrictEqual(calls[0], ['pull', 'img']);
+  });
+
   it('still runs when pull fails', async () => {
     const calls: string[][] = [];
     const exec: ExecFn = async (_command, args) => {
@@ -190,6 +233,57 @@ describe('DockerCliRunner', () => {
       logger.infos.some((line) => line.includes('docker') && line.includes('pull') && line.includes('img')),
     );
     assert.ok(logger.infos.some((line) => line.includes('Downloaded newer image')));
+  });
+
+  it('logs INFO with extra pull args on a successful pull', async () => {
+    const logger = new RecordingLogger();
+    const exec: ExecFn = async (_command, args) => {
+      if (args[0] === 'pull') {
+        return { stdout: 'Status: Downloaded newer image\n', stderr: '', code: 0 };
+      }
+      return successfulExec()(_command, args);
+    };
+    const runner = new DockerCliRunner(exec, logger);
+    await runner.start(
+      ['run', '-d', '--rm', 'img'],
+      'img',
+      ['--platform=linux/amd64'],
+    );
+    assert.ok(
+      logger.infos.some(
+        (line) =>
+          line.includes('docker') &&
+          line.includes('pull') &&
+          line.includes('--platform=linux/amd64') &&
+          line.includes('img'),
+      ),
+    );
+  });
+
+  it('still runs when pull with extras fails', async () => {
+    const calls: string[][] = [];
+    const exec: ExecFn = async (_command, args) => {
+      calls.push(args);
+      if (args[0] === 'pull') {
+        return { stdout: '', stderr: 'network error', code: 1 };
+      }
+      if (args[0] === 'run') {
+        return { stdout: 'cid123\n', stderr: '', code: 0 };
+      }
+      if (args[0] === 'port') {
+        return { stdout: '127.0.0.1:49152\n', stderr: '', code: 0 };
+      }
+      return { stdout: '', stderr: '', code: 0 };
+    };
+    const runner = new DockerCliRunner(exec);
+    const handle = await runner.start(
+      ['run', '-d', '--rm', 'img'],
+      'img',
+      ['--platform=linux/amd64'],
+    );
+    assert.strictEqual(handle.containerId, 'cid123');
+    assert.deepStrictEqual(calls[0], ['pull', '--platform=linux/amd64', 'img']);
+    assert.strictEqual(calls[1][0], 'run');
   });
 
   it('logs ERROR on pull failure and still starts when run succeeds', async () => {

@@ -2,6 +2,7 @@ import {
   DEFAULT_CONFIG_FILE_NAME,
   DEFAULT_DOCS_DIR,
   DEFAULT_DOCKER_IMAGE,
+  DEFAULT_DOCKER_PULL_PARAMS,
   DEFAULT_ENTRYPOINT,
   DEFAULT_SERVE_COMMAND,
   DEFAULT_WORKDIR,
@@ -14,6 +15,7 @@ export interface PreviewSettings {
   workdir: string;
   configFileName: string;
   docsDir: string;
+  dockerPullParams: string;
 }
 
 export interface ConfigurationReader {
@@ -37,6 +39,7 @@ export function readPreviewSettings(config: ConfigurationReader): PreviewSetting
     workdir: config.get('workdir', DEFAULT_WORKDIR),
     configFileName: config.get('configFileName', DEFAULT_CONFIG_FILE_NAME),
     docsDir: normalizeDocsDir(config.get('docsDir', DEFAULT_DOCS_DIR)),
+    dockerPullParams: config.get('dockerPullParams', DEFAULT_DOCKER_PULL_PARAMS).trim(),
   };
 }
 

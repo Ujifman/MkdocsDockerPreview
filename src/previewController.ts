@@ -11,6 +11,7 @@ import {
   validateForStart,
 } from './previewSettings';
 import { prefixSitePath, siteUrlPathPrefixFromYaml } from './siteUrlPrefix';
+import { splitArgs } from './splitArgs';
 
 export interface ShowLiveOptions {
   reveal?: boolean;
@@ -93,6 +94,7 @@ export class PreviewController {
       const previewUrl = await this.deps.session.start(
         dockerArgs,
         validation.settings.dockerImage,
+        splitArgs(validation.settings.dockerPullParams),
       );
       this.deps.logger.info(`Preview started at ${previewUrl}`);
       await this.deps.previewView.showLoading();

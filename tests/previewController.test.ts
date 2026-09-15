@@ -25,16 +25,22 @@ class MockRunner implements DockerRunner {
   public failWith: Error | undefined;
   public lastArgs: string[] | undefined;
   public lastImage: string | undefined;
+  public lastPullArgs: string[] | undefined;
   public urls = ['http://127.0.0.1:1111', 'http://127.0.0.1:2222'];
 
   public waitForServeReadyCount = 0;
   public resolveServeReady: (() => void) | undefined;
   public blockServeReady = false;
 
-  async start(dockerArgs: string[], image: string): Promise<{ containerId: string; previewUrl: string }> {
+  async start(
+    dockerArgs: string[],
+    image: string,
+    pullArgs: string[] = [],
+  ): Promise<{ containerId: string; previewUrl: string }> {
     this.startCount += 1;
     this.lastArgs = dockerArgs;
     this.lastImage = image;
+    this.lastPullArgs = pullArgs;
     if (this.failWith) {
       throw this.failWith;
     }
@@ -256,6 +262,48 @@ describe('PreviewController', () => {
     assert.strictEqual(runner.stopCount, 0);
     assert.strictEqual(logger.clearCount, 1);
     assert.strictEqual(runner.lastImage, DEFAULT_DOCKER_IMAGE);
+  });
+
+  it('forwards default docker pull params on a new start', async () => {
+    const { controller, runner } = makeController();
+
+    await controller.startPreview();
+
+    assert.deepStrictEqual(runner.lastPullArgs, ['--platform=linux/amd64']);
+  });
+
+  it('forwards custom docker pull params as split args', async () => {
+    const { controller, runner } = makeController({
+      readConfig: {
+        get<T>(key: string, defaultValue: T): T {
+          if (key === 'dockerPullParams') {
+            return '--quiet' as T;
+          }
+          return defaultValue;
+        },
+      },
+    });
+
+    await controller.startPreview();
+
+    assert.deepStrictEqual(runner.lastPullArgs, ['--quiet']);
+  });
+
+  it('forwards no extra pull args when dockerPullParams is blank', async () => {
+    const { controller, runner } = makeController({
+      readConfig: {
+        get<T>(key: string, defaultValue: T): T {
+          if (key === 'dockerPullParams') {
+            return '   ' as T;
+          }
+          return defaultValue;
+        },
+      },
+    });
+
+    await controller.startPreview();
+
+    assert.deepStrictEqual(runner.lastPullArgs, []);
   });
 
   it('opens the active docs page after serve-ready when the probe succeeds', async () => {

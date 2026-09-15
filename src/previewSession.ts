@@ -18,7 +18,11 @@ export class PreviewSession {
     return this.previewUrlValue;
   }
 
-  async start(dockerArgs: string[], image: string): Promise<string> {
+  async start(
+    dockerArgs: string[],
+    image: string,
+    pullArgs: string[] = [],
+  ): Promise<string> {
     if (this.stateValue === 'running' && this.previewUrlValue) {
       return this.previewUrlValue;
     }
@@ -28,7 +32,7 @@ export class PreviewSession {
 
     this.stateValue = 'starting';
     try {
-      const handle = await this.runner.start(dockerArgs, image);
+      const handle = await this.runner.start(dockerArgs, image, pullArgs);
       this.containerId = handle.containerId;
       this.previewUrlValue = handle.previewUrl;
       this.stateValue = 'running';

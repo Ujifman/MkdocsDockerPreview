@@ -92,6 +92,16 @@ The extension MUST write each Docker CLI invocation used for preview (the comman
 - **AND** the channel MUST contain the command's stderr or stdout when present
 - **AND** the extension MUST still show the existing error toast
 
+### Requirement: Docker pull extra arguments are logged
+
+When Start Preview pulls the configured image and extra Docker pull params are set, the `MkdocsDockerPreview` channel MUST log an INFO line that includes those extra arguments along with `docker pull` and the image name.
+
+#### Scenario: Successful pull logs extra arguments
+
+- **WHEN** Start Preview pulls the configured image successfully
+- **AND** the Docker pull params setting is `--platform=linux/amd64`
+- **THEN** the channel MUST contain an INFO line with the docker pull command, `--platform=linux/amd64`, and the image name
+
 ### Requirement: Container serve logs are streamed
 
 While a preview container is running, the extension MUST stream that container's stdout and stderr (MkDocs/properdocs serve output) into the `MkdocsDockerPreview` channel. Streaming MUST stop when the preview stops, the workspace closes, or the extension deactivates. Failure to follow logs MUST be logged as ERROR and MUST NOT stop an otherwise successful preview.

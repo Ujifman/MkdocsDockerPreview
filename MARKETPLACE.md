@@ -28,6 +28,7 @@ Preview an MkDocs (or properdocs) repository inside VS Code by running `serve` i
 | `mkdocsDockerPreview.workdir` | `/build` | Container path where the workspace is mounted and used as the working directory. |
 | `mkdocsDockerPreview.configFileName` | `mkdocs.yml` | Config file expected at the workspace root for Command Palette **Start Preview**. |
 | `mkdocsDockerPreview.docsDir` | `docs` | Docs folder (relative to the workspace root) whose markdown files map to preview pages. |
+| `mkdocsDockerPreview.dockerPullParams` | `--platform=linux/amd64` | Extra arguments passed to `docker pull` before the image name. Empty to pull with no extra flags. |
 
 Container port `8000` is published to a random localhost port; the extension detects the mapping automatically.
 

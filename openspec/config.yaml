@@ -9,6 +9,7 @@ context: |
 
   Preview runtime (host → container):
   - dockerImage default: ujifman/properdocs-material:latest (blank image is an error).
+  - dockerPullParams default: --platform=linux/amd64 (blank means no extra docker pull flags).
   - entrypoint default: /bin/bash
   - serveCommand default uses {configFile} placeholder and properdocs serve on 0.0.0.0:8000
   - workdir default: /build (entire workspace mounted there)

@@ -101,10 +101,14 @@ export class DockerCliRunner implements DockerRunner {
     await this.serveReady.promise;
   }
 
-  async start(dockerArgs: string[], image: string): Promise<ContainerHandle> {
+  async start(
+    dockerArgs: string[],
+    image: string,
+    pullArgs: string[] = [],
+  ): Promise<ContainerHandle> {
     this.abortServeReadyWait();
     this.stopLogFollow();
-    await this.pullImage(image);
+    await this.pullImage(image, pullArgs);
     const runResult = await this.execSafe('docker', dockerArgs);
     const containerId = runResult.stdout.trim();
     if (!containerId) {
@@ -217,9 +221,9 @@ export class DockerCliRunner implements DockerRunner {
     this.logFollow = undefined;
   }
 
-  private async pullImage(image: string): Promise<void> {
+  private async pullImage(image: string, pullArgs: string[]): Promise<void> {
     try {
-      await this.execSafe('docker', ['pull', image]);
+      await this.execSafe('docker', ['pull', ...pullArgs, image]);
     } catch {
       // Best-effort: already logged. docker run may still succeed with a local image.
     }

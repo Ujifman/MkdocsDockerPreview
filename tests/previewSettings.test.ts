@@ -3,6 +3,7 @@ import {
   DEFAULT_CONFIG_FILE_NAME,
   DEFAULT_DOCS_DIR,
   DEFAULT_DOCKER_IMAGE,
+  DEFAULT_DOCKER_PULL_PARAMS,
   DEFAULT_ENTRYPOINT,
   DEFAULT_SERVE_COMMAND,
   DEFAULT_WORKDIR,
@@ -32,6 +33,25 @@ describe('previewSettings', () => {
     assert.strictEqual(settings.workdir, DEFAULT_WORKDIR);
     assert.strictEqual(settings.configFileName, DEFAULT_CONFIG_FILE_NAME);
     assert.strictEqual(settings.docsDir, DEFAULT_DOCS_DIR);
+    assert.strictEqual(settings.dockerPullParams, DEFAULT_DOCKER_PULL_PARAMS);
+  });
+
+  it('uses custom dockerPullParams trimmed', () => {
+    const settings = readPreviewSettings(
+      mapConfig({ dockerPullParams: '  --quiet  ' }),
+    );
+    assert.strictEqual(settings.dockerPullParams, '--quiet');
+  });
+
+  it('treats empty or whitespace dockerPullParams as empty', () => {
+    assert.strictEqual(
+      readPreviewSettings(mapConfig({ dockerPullParams: '' })).dockerPullParams,
+      '',
+    );
+    assert.strictEqual(
+      readPreviewSettings(mapConfig({ dockerPullParams: '   ' })).dockerPullParams,
+      '',
+    );
   });
 
   it('uses custom docsDir when set', () => {
@@ -57,6 +77,7 @@ describe('previewSettings', () => {
         workdir: DEFAULT_WORKDIR,
         configFileName: DEFAULT_CONFIG_FILE_NAME,
         docsDir: DEFAULT_DOCS_DIR,
+        dockerPullParams: DEFAULT_DOCKER_PULL_PARAMS,
       },
       '/ws',
       () => true,
@@ -77,6 +98,7 @@ describe('previewSettings', () => {
         workdir: DEFAULT_WORKDIR,
         configFileName: 'mkdocs.yml',
         docsDir: DEFAULT_DOCS_DIR,
+        dockerPullParams: DEFAULT_DOCKER_PULL_PARAMS,
       },
       '/ws',
       () => false,
@@ -106,6 +128,7 @@ describe('previewSettings', () => {
         workdir: DEFAULT_WORKDIR,
         configFileName: 'mkdocs.custom.yml',
         docsDir: DEFAULT_DOCS_DIR,
+        dockerPullParams: DEFAULT_DOCKER_PULL_PARAMS,
       },
       '/ws',
       (p) => p === '/ws/mkdocs.custom.yml',
